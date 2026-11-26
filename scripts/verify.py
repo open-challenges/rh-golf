@@ -111,8 +111,20 @@ def entry_lakefile(res: count_lines.Result) -> str:
 
 
 def assemble(res: count_lines.Result, build: str, sandbox: str) -> None:
-    if os.path.exists(build):
-        shutil.rmtree(build)
+    """Write the entry's workspace. Lake's output (.lake/build) survives from an earlier run in the same
+    --work folder, so that checking a small change rebuilds only what changed."""
+    if os.path.isdir(build):
+        for name in os.listdir(build):
+            path = os.path.join(build, name)
+            if name == ".lake":
+                for sub in os.listdir(path):
+                    if sub != "build":
+                        p = os.path.join(path, sub)
+                        os.unlink(p) if os.path.islink(p) or not os.path.isdir(p) else shutil.rmtree(p)
+            elif os.path.isdir(path) and not os.path.islink(path):
+                shutil.rmtree(path)
+            else:
+                os.unlink(path)
     count_lines.write_stripped(res, os.path.join(build, "entry"))
     for f in ("lean-toolchain", "lake-manifest.json", "Statements.lean"):
         shutil.copy(os.path.join(HARNESS, f), os.path.join(build, f))
@@ -180,7 +192,7 @@ def main(argv: list[str]) -> int:
     src_arg.add_argument("--code", help="https://github.com/OWNER/REPO/tree/<commit>/<folder>")
     src_arg.add_argument("--src", help="a local folder holding Main.lean")
     ap.add_argument("--sandbox", choices=["docker", "none"], default="none")
-    ap.add_argument("--work", help="work folder (default: a new temporary one)")
+    ap.add_argument("--work", help="work folder (default: a new temporary one); reuse it to rebuild only what changed")
     ap.add_argument("--skip-harness", action="store_true", help="the harness is built already")
     ap.add_argument("--count-only", action="store_true", help="stop after counting")
     args = ap.parse_args(argv)

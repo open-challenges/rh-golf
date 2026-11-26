@@ -19,15 +19,15 @@ Goal: a Lean 4 proof of the Riemann Hypothesis with fewer lines than the current
 
 ```bash
 python3 scripts/count_lines.py path/to/src --verbose | head -30   # the score, biggest files first
-python3 scripts/verify.py --src path/to/src                       # build and judge, as CI does
+python3 scripts/verify.py --src path/to/src --work ../rhgolf-work # build and judge, as CI does
 ```
 
 `count_lines.py` is the scorer. It counts `Main.lean` and the files it imports, ignores comments
 and blank lines, and charges ⌈width/100⌉ for each other line. `verify.py` builds exactly the text
 it counted and runs the judge, which kernel-replays every constant and checks statements and
 axioms. Exit code 0 and `"ok": true` in its verdict mean CI will accept the entry. A full build of
-the baseline takes one to two hours on 12 cores; while iterating, rebuild only what changed with
-`lake build` in your working copy.
+the baseline takes one to two hours on 12 cores. Keep the same `--work` folder between runs and
+only the modules that changed are rebuilt.
 
 ## What not to do
 
