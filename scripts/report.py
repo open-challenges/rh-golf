@@ -95,9 +95,9 @@ def main() -> int:
     entry = json.load(open(args.entry)) if args.entry and os.path.exists(args.entry) else None
     bests = entries.best(entries.load(ROOT))
     labels, merge, lines = decide(entry, verdict, bests)
-    body = ["### RH Golf verification", "", *lines, *details(verdict, entry)]
+    body = ["### Shortest Riemann Hypothesis Proof verification", "", *lines, *details(verdict, entry)]
     if args.run_url:
-        repo = os.environ.get("GITHUB_REPOSITORY", "open-challenges/rh-golf")
+        repo = os.environ.get("GITHUB_REPOSITORY", "open-challenges/shortest-riemann-hypothesis-proof")
         body += ["", f"[Workflow run]({args.run_url}) · [rules](https://github.com/{repo}/blob/main/PROBLEM.md)"]
     os.makedirs(args.out, exist_ok=True)
     with open(os.path.join(args.out, "comment.md"), "w") as fh:

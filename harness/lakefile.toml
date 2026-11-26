@@ -1,4 +1,4 @@
-# The trusted side of RH Golf: the challenge's statements, the judge and the exporter, on the Lean and
+# The trusted side of Shortest Riemann Hypothesis Proof: the challenge's statements, the judge and the exporter, on the Lean and
 # Mathlib of the compact edition of lsernau/grh-lean (the baseline). An entry is built in a separate
 # workspace (scripts/verify.py writes its lakefile) with the same options below, which are the
 # compact edition's own.

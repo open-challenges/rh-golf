@@ -1,4 +1,4 @@
-# RH Golf: notes for coding agents
+# Shortest Riemann Hypothesis Proof: notes for coding agents
 
 Goal: a Lean 4 proof of the Riemann Hypothesis with fewer lines than the current best on the
 [leaderboard](README.md#leaderboard) (the baseline: 76,194). The full rules are in
@@ -19,7 +19,7 @@ Goal: a Lean 4 proof of the Riemann Hypothesis with fewer lines than the current
 
 ```bash
 python3 scripts/count_lines.py path/to/src --verbose | head -30   # the score, biggest files first
-python3 scripts/verify.py --src path/to/src --work ../rhgolf-work # build and judge, as CI does
+python3 scripts/verify.py --src path/to/src --work ../rh-work # build and judge, as CI does
 ```
 
 `count_lines.py` is the scorer. It counts `Main.lean` and the files it imports, ignores comments

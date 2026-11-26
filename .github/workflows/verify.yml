@@ -1,4 +1,4 @@
-name: verify
+name: Lean proof check
 
 # Verifies an entry: counts its lines, builds it in a sandbox, exports it and judges it
 # (scripts/verify.py), then reports on the pull request and merges a new record.
@@ -12,12 +12,15 @@ name: verify
 # The verify job's token can only read. The publish job, which comments, labels and merges, runs no
 # entry code.
 #
-# A maintainer can verify any commit by hand: Actions → verify → Run workflow.
+# A maintainer can verify any commit by hand: Actions → Lean proof check → Run workflow.
 
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
     paths: ["submissions/**"]
+  # weekly: the baseline again, so a broken pin, cache or runner shows up before an entry does
+  schedule:
+    - cron: "23 4 * * 1"
   workflow_dispatch:
     inputs:
       code:
@@ -58,10 +61,10 @@ jobs:
           # the code URL is checked against a strict pattern in scripts/entries.py before it gets here
           python3 -c 'import json, sys; e = json.load(open(sys.argv[1])); e["ok"] and print("CODE=" + e["code"])' "$RUNNER_TEMP/entry.json" >> "$GITHUB_ENV"
 
-      - name: Take the entry from the dispatch
-        if: github.event_name == 'workflow_dispatch'
+      - name: Take the entry from the dispatch (or the baseline, on schedule)
+        if: github.event_name != 'pull_request_target'
         env:
-          CODE: ${{ inputs.code }}
+          CODE: ${{ inputs.code || 'https://github.com/lsernau/grh-lean/tree/72fead102f663d5c7a407964a13dc0cf9d977207/grh-compact/src' }}
         run: python3 -c 'import os, sys; sys.path.insert(0, "scripts"); import entries; c = os.environ["CODE"].strip(); assert entries.CODE_URL.match(c), c; print("CODE=" + c)' >> "$GITHUB_ENV"
 
       - name: Fetch and count

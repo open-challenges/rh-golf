@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify an RH Golf entry end to end: count it, build it, export it, judge it.
+"""Verify an entry end to end: count it, build it, export it, judge it.
 
     # an entry as CI sees it: a public GitHub folder at a pinned commit, built in a sandbox
     python3 scripts/verify.py --code https://github.com/OWNER/REPO/tree/<commit>/<folder> --sandbox docker

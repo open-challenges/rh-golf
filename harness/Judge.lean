@@ -2,7 +2,7 @@ import Lean
 import LeanExport.Parse
 
 /-!
-# The RH Golf judge
+# The judge
 
     judge <judge.json> <entry.ndjson> <imports.txt> <result.json>
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The RH Golf line counter: the score of an entry.
+"""The line counter of the Shortest Riemann Hypothesis Proof challenge: the score of an entry.
 
     python3 scripts/count_lines.py path/to/src             # score, per-file table on --verbose
     python3 scripts/count_lines.py path/to/src --json      # machine-readable

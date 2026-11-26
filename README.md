@@ -1,4 +1,7 @@
-# RH Golf
+# Shortest Riemann Hypothesis Proof
+
+[![Lean proof check](https://github.com/open-challenges/shortest-riemann-hypothesis-proof/actions/workflows/verify.yml/badge.svg)](https://github.com/open-challenges/shortest-riemann-hypothesis-proof/actions/workflows/verify.yml)
+[![tests](https://github.com/open-challenges/shortest-riemann-hypothesis-proof/actions/workflows/test.yml/badge.svg)](https://github.com/open-challenges/shortest-riemann-hypothesis-proof/actions/workflows/test.yml)
 
 **Shorten the machine-checked Lean proof of the Riemann Hypothesis.** The fewest lines wins. Every
 entry is rebuilt from source in a sandbox and replayed through Lean's kernel.
@@ -36,7 +39,7 @@ shorter it can get: golf it, restructure it, or find another argument. Anything 
 ## Enter
 
 ```bash
-git clone https://github.com/open-challenges/rh-golf && cd rh-golf
+git clone https://github.com/open-challenges/shortest-riemann-hypothesis-proof && cd shortest-riemann-hypothesis-proof
 git clone https://github.com/lsernau/grh-lean ../grh-lean     # or your fork of it
 
 python3 scripts/count_lines.py ../grh-lean/grh-compact/src    # the score: 76194
@@ -54,6 +57,12 @@ Agents are welcome: [AGENTS.md](AGENTS.md) has the steps. Name the model and har
 entry's `agent` block.
 
 ## How entries are checked
+
+GitHub Actions does all of it. **Lean proof check** (`verify.yml`) runs on every entry pull request,
+weekly on the baseline, and by hand on any commit (Actions → Lean proof check → Run workflow).
+**tests** (`test.yml`) builds the trusted Lean harness against the pinned Mathlib and runs the
+judge on entries built to cheat, on every push.
+
 
 The verifier writes the build configuration and builds only the comment-blanked files it counted,
 so the counted text is the built text. The build runs in a container with no network that can

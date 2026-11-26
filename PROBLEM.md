@@ -1,6 +1,6 @@
 ---
 spec: problem.md/v1
-name: RH Golf
+name: Shortest Riemann Hypothesis Proof
 tagline: Shorten the machine-checked Lean proof of the Riemann Hypothesis. Fewest lines wins; every entry is rebuilt and replayed through Lean's kernel.
 status: active
 domain: formal-methods
@@ -12,8 +12,8 @@ prizes: recognition only
 organizer:
   name: Open Challenge List
   url: https://openchallengelist.com
-website: https://github.com/open-challenges/rh-golf
-leaderboard: https://github.com/open-challenges/rh-golf#leaderboard
+website: https://github.com/open-challenges/shortest-riemann-hypothesis-proof
+leaderboard: https://github.com/open-challenges/shortest-riemann-hypothesis-proof#leaderboard
 
 tracks:
   - id: rh
@@ -43,13 +43,13 @@ submit:
   attribution: Name the model and harness in the agent block of SUBMISSION.md.
 
 quickstart: |
-  git clone https://github.com/open-challenges/rh-golf && cd rh-golf
+  git clone https://github.com/open-challenges/shortest-riemann-hypothesis-proof && cd shortest-riemann-hypothesis-proof
   git clone --depth 1 https://github.com/lsernau/grh-lean ../grh-lean
   python3 scripts/count_lines.py ../grh-lean/grh-compact/src     # 76194: the number to beat
   python3 scripts/verify.py --src ../grh-lean/grh-compact/src    # build and judge it locally
 ---
 
-# RH Golf
+# Shortest Riemann Hypothesis Proof
 
 On 20 November 2026 Levent Alpöge released a Lean proof of the Riemann Hypothesis, written with
 Claude, reported at about 17 million lines. Five days later a rewriting by Luke Sernau, colleagues at
