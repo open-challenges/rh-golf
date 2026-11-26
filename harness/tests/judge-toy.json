@@ -1,0 +1,8 @@
+{
+  "theorems": [
+    {"name": "riemannHypothesis", "type": "RiemannHypothesis", "home": "Statements"},
+    {"name": "riemannZeta_eq_zero_re", "type": "RiemannZetaZerosOnLine", "home": "Statements"}
+  ],
+  "tracks": [["rh", ["riemannHypothesis"]], ["grh", ["riemannHypothesis", "riemannZeta_eq_zero_re"]]],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}

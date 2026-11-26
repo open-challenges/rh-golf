@@ -1,0 +1,35 @@
+# The trusted side of RH Golf: the challenge's statements, the judge and the exporter, on the Lean and
+# Mathlib of the compact edition of lsernau/grh-lean (the baseline). An entry is built in a separate
+# workspace (scripts/verify.py writes its lakefile) with the same options below, which are the
+# compact edition's own.
+name = "RHGolf"
+defaultTargets = ["Statements", "judge", "export-entry"]
+moreLeanArgs = ["--tstack=400000"]
+
+[leanOptions]
+autoImplicit = false
+relaxedAutoImplicit = false
+maxSynthPendingDepth = 3
+pp.unicode.fun = true
+maxHeartbeats = 4000000
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "56a005855ea17e0b0958f73ec801ae140b0a1679"
+
+# the statements, unchanged from the compact edition: Statements.lean imports only Mathlib
+[[lean_lib]]
+name = "Statements"
+
+# the five theorems with `sorry`, for anyone who wants to run Comparator by hand (comparator.json)
+[[lean_lib]]
+name = "Challenge"
+
+[[lean_exe]]
+name = "judge"
+root = "Judge"
+
+[[lean_exe]]
+name = "export-entry"
+root = "ExportEntry"

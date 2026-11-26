@@ -1,0 +1,143 @@
+name: verify
+
+# Verifies an entry: counts its lines, builds it in a sandbox, exports it and judges it
+# (scripts/verify.py), then reports on the pull request and merges a new record.
+#
+# A pull request that adds submissions/<you>/SUBMISSION.md runs this workflow as it is on main
+# (pull_request_target), so a pull request cannot change how it is judged, and nothing from the pull
+# request is checked out or run: SUBMISSION.md is read through the API as data. The entry's code is
+# the commit its `code` field pins. It is built in a container with no network, no capabilities and
+# a read-only root, where it can write only its own build folder; the judge then reads the text
+# export of what was built, plus trusted files, and replays every constant through Lean's kernel.
+# The verify job's token can only read. The publish job, which comments, labels and merges, runs no
+# entry code.
+#
+# A maintainer can verify any commit by hand: Actions → verify → Run workflow.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+    paths: ["submissions/**"]
+  workflow_dispatch:
+    inputs:
+      code:
+        description: https://github.com/OWNER/REPO/tree/<40-hex commit>/<folder with Main.lean>
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: verify-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install pyyaml==6.0.2
+
+      - name: Read the entry from the pull request
+        if: github.event_name == 'pull_request_target'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          python3 scripts/pr_entry.py "$PR" | tee "$RUNNER_TEMP/entry.json"
+          # the code URL is checked against a strict pattern in scripts/entries.py before it gets here
+          python3 -c 'import json, sys; e = json.load(open(sys.argv[1])); e["ok"] and print("CODE=" + e["code"])' "$RUNNER_TEMP/entry.json" >> "$GITHUB_ENV"
+
+      - name: Take the entry from the dispatch
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CODE: ${{ inputs.code }}
+        run: python3 -c 'import os, sys; sys.path.insert(0, "scripts"); import entries; c = os.environ["CODE"].strip(); assert entries.CODE_URL.match(c), c; print("CODE=" + c)' >> "$GITHUB_ENV"
+
+      - name: Free disk space
+        if: env.CODE != ''
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
+          df -h /
+
+      - name: Install elan
+        if: env.CODE != ''
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
+          sh elan-init.sh -y --default-toolchain none
+          rm elan-init.sh
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+
+      - name: Trusted harness (Mathlib's cache, Statements, the judge, the exporter)
+        if: env.CODE != ''
+        working-directory: harness
+        run: |
+          lake exe cache get
+          lake build Statements judge export-entry
+
+      - name: Verify
+        if: env.CODE != ''
+        env:
+          RHGOLF_BUILD_TIMEOUT: "16800"
+        run: python3 scripts/verify.py --code "$CODE" --sandbox docker --skip-harness --work "$RUNNER_TEMP/work" || true
+
+      - name: Verdict
+        if: always()
+        run: |
+          mkdir -p out
+          cp "$RUNNER_TEMP/entry.json" out/ 2>/dev/null || true
+          cp "$RUNNER_TEMP/work/verdict.json" out/ 2>/dev/null || true
+          entry=(); [ -f out/entry.json ] && entry=(--entry out/entry.json)
+          python3 scripts/report.py --verdict out/verdict.json "${entry[@]}" --out out \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verdict
+          path: out/
+          retention-days: 90
+
+  publish:
+    needs: verify
+    if: ${{ !cancelled() && github.event_name == 'pull_request_target' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      actions: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: verdict
+          path: out
+
+      - name: Comment, label, and merge a new record
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          gh pr comment "$PR" --body-file out/comment.md
+          for label in $(jq -r '.labels[]' out/decision.json); do
+            gh label create "$label" 2>/dev/null || true
+            gh pr edit "$PR" --add-label "$label"
+          done
+          if [ "$(jq -r '.merge' out/decision.json)" = true ]; then
+            # only the commit that was verified: a push after it starts a new run instead
+            gh pr merge "$PR" --squash --match-head-commit "$HEAD_SHA"
+            gh workflow run leaderboard.yml
+          fi

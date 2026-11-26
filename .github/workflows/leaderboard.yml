@@ -1,0 +1,36 @@
+name: leaderboard
+
+# Rewrites the leaderboard in README.md from submissions/*/SUBMISSION.md after anything lands on
+# main. verify.yml dispatches it after merging a record, since its own merge doesn't trigger pushes.
+
+on:
+  push:
+    branches: [main]
+    paths: ["submissions/**", "scripts/leaderboard.py", "scripts/entries.py"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: leaderboard
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pyyaml==6.0.2
+      - run: python3 scripts/leaderboard.py
+      - name: Commit
+        run: |
+          git diff --quiet && exit 0
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -qam "Leaderboard: update"
+          git push

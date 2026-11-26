@@ -1,0 +1,17 @@
+RH Golf
+Copyright 2026 the Open Challenge List contributors
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE).
+
+harness/Statements.lean, harness/Challenge.lean, harness/comparator.json, harness/lean-toolchain and
+the package pins in harness/lake-manifest.json are copied unchanged, and the options in
+harness/lakefile.toml are taken, from the compact edition of https://github.com/lsernau/grh-lean
+(commit 72fead102f663d5c7a407964a13dc0cf9d977207, folder grh-compact): Copyright 2026 Anthropic,
+PBC, under the Apache License, Version 2.0. Its NOTICE says that Statements.lean and the names and
+types of the five theorems are taken unchanged from Levent Alpöge's Lean proof (see
+https://alpo.ge/remark.pdf).
+
+This product depends on, but does not include, Lean 4 (https://github.com/leanprover/lean4) and
+Mathlib (https://github.com/leanprover-community/mathlib4), both under the Apache License, Version
+2.0, and the packages Mathlib pins. harness/Judge.lean and harness/ExportEntry.lean call Lean's
+kernel replay (Lean.Replay) and NDJSON exporter and parser (LeanExport), which are part of Lean.

@@ -1,0 +1,15 @@
+{
+  "theorems": [
+    {"name": "riemannHypothesis", "type": "RiemannHypothesis", "home": "Mathlib"},
+    {"name": "riemannZeta_eq_zero_re", "type": "RiemannZetaZerosOnLine", "home": "Statements"},
+    {"name": "LFunction_ne_zero_of_half_lt_re", "type": "DirichletLNonvanishingRightOfHalf", "home": "Statements"},
+    {"name": "LFunction_eq_zero_re", "type": "DirichletLZerosOnLine", "home": "Statements"},
+    {"name": "LFunction_eq_zero_re_of_isPrimitive", "type": "PrimitiveDirichletLZerosOnLine", "home": "Statements"}
+  ],
+  "tracks": [
+    ["rh", ["riemannHypothesis"]],
+    ["grh", ["riemannHypothesis", "riemannZeta_eq_zero_re", "LFunction_ne_zero_of_half_lt_re",
+             "LFunction_eq_zero_re", "LFunction_eq_zero_re_of_isPrimitive"]]
+  ],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"]
+}
