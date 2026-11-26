@@ -40,6 +40,7 @@ ROOT = os.path.dirname(HERE)
 HARNESS = os.path.join(ROOT, "harness")
 sys.path.insert(0, HERE)
 import count_lines  # noqa: E402
+import flags  # noqa: E402
 
 CODE_URL = re.compile(r"^https://github\.com/([A-Za-z0-9](?:[A-Za-z0-9-]{0,38}))/([A-Za-z0-9._-]{1,100})/tree/([0-9a-f]{40})(?:/([^?#]*?))?/?$")
 SANDBOX_IMAGE = "rhgolf-sandbox"
@@ -219,6 +220,7 @@ def main(argv: list[str]) -> int:
         return finish(False, stage="count", error=str(e))
     count_lines.write_lists(res, work)
     verdict["count"] = res.totals()
+    verdict["flags"] = flags.scan(res)
     log(f"score {res.score} lines in {len(res.files)} files")
     if args.count_only:
         return finish(True, stage="count")

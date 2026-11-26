@@ -127,7 +127,10 @@ was built.
    you entered with exactly the score the counter gives, `author` is your GitHub handle, and the
    `agent` block names the model and harness, if one did the work.
 4. CI verifies the commit and comments the result. A new record on any track you entered is merged
-   at once; any other verified entry waits for a maintainer.
+   at once, unless the entry runs code while elaborating (`#eval`, `run_cmd`, macros or
+   elaborators, hand-built declarations, input and output, `unsafe`) or has very long string or
+   number literals (see [`scripts/flags.py`](scripts/flags.py)). Such a record, and any verified
+   entry that is not a record, waits for a maintainer.
 
 ## How an entry is verified
 

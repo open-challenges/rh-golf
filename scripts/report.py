@@ -47,12 +47,20 @@ def decide(entry: dict | None, verdict: dict, bests: dict[str, int]) -> tuple[li
     if wrong:
         return ["needs-fix"], False, lines + ["", "The values in SUBMISSION.md must be exactly what was verified:", *wrong,
                                               "", "Update SUBMISSION.md; the new commit is verified again."]
+    found = verdict.get("flags") or []
+    review = ["", "It uses constructs that a maintainer checks before it goes on the board, because the rules forbid "
+              "a proof stored as data and turned into declarations at build time:", "",
+              *[f"- {f}" for f in found]] if found else []
     records = [t for t in entry["results"] if score < bests.get(t, float("inf"))]
     if records:
         was = "; ".join(f"`{t}` was {fmt(bests[t])}" if t in bests else f"`{t}` had no entry" for t in records)
+        if found:
+            return ["verified", "record", "needs-review"], False, lines + ["", f"🏆 **New record** ({was})."] + review + [
+                "", "A maintainer will review it and merge it."]
         return ["verified", "record"], True, lines + ["", f"🏆 **New record** ({was}). Merging it onto the leaderboard."]
     beat = "; ".join(f"`{t}` best is {fmt(bests[t])}" for t in entry["results"] if t in bests)
-    return ["verified"], False, lines + ["", f"Not a record ({beat}). A maintainer will merge it onto the leaderboard."]
+    return ["verified"] + (["needs-review"] if found else []), False, lines + [
+        "", f"Not a record ({beat}). A maintainer will merge it onto the leaderboard."] + review
 
 
 def details(verdict: dict, entry: dict | None) -> list[str]:
