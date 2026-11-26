@@ -196,7 +196,11 @@ def main(argv: list[str]) -> int:
         print(json.dumps(verdict, indent=2))
         return 0 if ok else 1
 
-    src = fetch(args.code, os.path.join(work, "source")) if args.code else os.path.abspath(args.src)
+    try:
+        src = fetch(args.code, os.path.join(work, "source")) if args.code else os.path.abspath(args.src)
+    except (subprocess.CalledProcessError, subprocess.TimeoutExpired, SystemExit) as e:
+        why = e.code if isinstance(e, SystemExit) else "git could not fetch that commit (is the repository public, and the hash complete?)"
+        return finish(False, stage="fetch", error=str(why))
     try:
         res = count_lines.count(src)
     except count_lines.CountError as e:

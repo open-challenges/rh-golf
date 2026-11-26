@@ -34,6 +34,9 @@ def decide(entry: dict | None, verdict: dict, bests: dict[str, int]) -> tuple[li
         if verdict.get("log_tail"):
             why += ["", "<details><summary>End of the build log</summary>", "", "```", verdict["log_tail"][-5000:], "```", "", "</details>"]
         return ["rejected"], False, why
+    if verdict.get("stage") != "judge" or "score" not in verdict:
+        return ["rejected"], False, [f"❌ **Not verified**: the run stopped after the {verdict.get('stage', 'setup')} step. "
+                                     "See the workflow run; a maintainer can re-run it."]
     score, tracks = verdict["score"], set(verdict.get("tracks") or [])
     names = ", ".join(f"`{t}`" for t in sorted(tracks))
     lines = [f"✅ **Verified: {fmt(score)} lines**, proving track{'s' if len(tracks) > 1 else ''} {names}."]

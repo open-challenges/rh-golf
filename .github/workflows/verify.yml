@@ -64,14 +64,22 @@ jobs:
           CODE: ${{ inputs.code }}
         run: python3 -c 'import os, sys; sys.path.insert(0, "scripts"); import entries; c = os.environ["CODE"].strip(); assert entries.CODE_URL.match(c), c; print("CODE=" + c)' >> "$GITHUB_ENV"
 
-      - name: Free disk space
+      - name: Fetch and count
         if: env.CODE != ''
+        run: |
+          python3 scripts/verify.py --code "$CODE" --count-only --work "$RUNNER_TEMP/count" || true
+          # build only what counted: a bad commit or folder is reported without the hours of building
+          python3 -c 'import json, sys; v = json.load(open(sys.argv[1])); v["ok"] and print("COUNTED=1")' "$RUNNER_TEMP/count/verdict.json" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/work" && cp "$RUNNER_TEMP/count/verdict.json" "$RUNNER_TEMP/work/verdict.json"
+
+      - name: Free disk space
+        if: env.COUNTED == '1'
         run: |
           sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL /usr/local/share/boost
           df -h /
 
       - name: Install elan
-        if: env.CODE != ''
+        if: env.COUNTED == '1'
         run: |
           curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh -o elan-init.sh
           sh elan-init.sh -y --default-toolchain none
@@ -79,14 +87,14 @@ jobs:
           echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
 
       - name: Trusted harness (Mathlib's cache, Statements, the judge, the exporter)
-        if: env.CODE != ''
+        if: env.COUNTED == '1'
         working-directory: harness
         run: |
           lake exe cache get
           lake build Statements judge export-entry
 
-      - name: Verify
-        if: env.CODE != ''
+      - name: Build and judge
+        if: env.COUNTED == '1'
         env:
           RHGOLF_BUILD_TIMEOUT: "16800"
         run: python3 scripts/verify.py --code "$CODE" --sandbox docker --skip-harness --work "$RUNNER_TEMP/work" || true
