@@ -195,7 +195,8 @@ class Result:
 def count(src_root: str, root_module: str = ROOT_MODULE) -> Result:
     """Score the entry whose sources are under src_root, starting from module root_module."""
     if not os.path.isfile(module_path(src_root, root_module)):
-        raise CountError(f"{root_module}.lean not found in {src_root}")
+        folder = os.path.basename(os.path.normpath(src_root))
+        raise CountError(f"there is no {root_module}.lean in the folder {folder!r}: point at the folder that holds it")
     res, seen, todo = Result(), set(), [root_module]
     while todo:
         mod = todo.pop()
